@@ -261,7 +261,19 @@ The output APK will be generated at:
 
 ---
 
-## 9. Known Limitations
+## 9. Application Screenshots
+
+| Dashboard & Telemetry | Control Studio & Presets | Actuator Calibration |
+|:---:|:---:|:---:|
+| ![Dashboard](./docs/screenshots/dashboard.png) | ![Control Studio](./docs/screenshots/controls.png) | ![Calibration Wizard](./docs/screenshots/calibration.png) |
+
+| Diagnostic Logs | Settings & Simulator |
+|:---:|:---:|
+| ![Diagnostic Logs](./docs/screenshots/logs.png) | ![Settings Bench](./docs/screenshots/settings.png) |
+
+---
+
+## 10. Known Limitations
 
 - **Simulated Hardware**: The application does not require a physical ESP32 or mechanical servos. All kinematics, biopotentials, and battery curves are simulated in software.
 - **BLE Ready**: BLE communication is architected via `ICommunicationService` and `BLEDeviceService` for drop-in integration when hardware is manufactured.
