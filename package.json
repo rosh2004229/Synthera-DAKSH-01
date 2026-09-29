@@ -1,19 +1,28 @@
 {
-  "name": "Currentlyapp",
-  "version": "0.0.1",
+  "name": "synthera-daksh01-prosthetic-controller",
+  "version": "1.0.0",
+  "description": "ESP32-based Bionic Prosthetic Hand Controller Mobile Application for DAKSH-01",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest --forceExit"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^3.1.1",
+    "@react-native/new-app-screen": "0.87.1",
+    "@react-navigation/bottom-tabs": "^7.19.2",
+    "@react-navigation/native": "^7.4.1",
+    "@react-navigation/native-stack": "^7.19.2",
+    "@reduxjs/toolkit": "^2.12.0",
     "react": "19.2.3",
     "react-native": "0.87.1",
-    "@react-native/new-app-screen": "0.87.1",
-    "react-native-safe-area-context": "^5.5.2"
+    "react-native-safe-area-context": "^5.5.2",
+    "react-native-screens": "^4.28.0",
+    "react-native-svg": "^15.15.5",
+    "react-redux": "^9.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
