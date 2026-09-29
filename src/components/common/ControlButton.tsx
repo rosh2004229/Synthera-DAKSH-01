@@ -130,11 +130,21 @@ export const ControlButton: React.FC<ControlButtonProps> = ({
 
   const vStyles = getVariantStyles();
   const sStyles = getSizeStyles();
+  const lastPressRef = React.useRef<number>(0);
+
+  const handlePress = () => {
+    const now = Date.now();
+    if (now - lastPressRef.current < 300) {
+      return;
+    }
+    lastPressRef.current = now;
+    onPress();
+  };
 
   return (
     <TouchableOpacity
       activeOpacity={0.75}
-      onPress={onPress}
+      onPress={handlePress}
       disabled={disabled || loading}
       accessibilityLabel={accessibilityLabel || label}
       style={[

@@ -417,7 +417,7 @@ export const CalibrationScreen: React.FC = () => {
             <View style={styles.navRow}>
               <TouchableOpacity
                 style={[styles.quickNavBtn, { backgroundColor: theme.colors.surfaceHighlight, borderColor: theme.colors.surfaceBorder }]}
-                onPress={() => navigation.navigate('Controls')}
+                onPress={() => navigation.navigate('Main', { screen: 'Controls' })}
               >
                 <Text style={[styles.quickNavText, { color: theme.colors.primary }]}>
                   ← CONTROLS STUDIO
@@ -426,7 +426,7 @@ export const CalibrationScreen: React.FC = () => {
 
               <TouchableOpacity
                 style={[styles.quickNavBtn, { backgroundColor: theme.colors.surfaceHighlight, borderColor: theme.colors.surfaceBorder }]}
-                onPress={() => navigation.navigate('Dashboard')}
+                onPress={() => navigation.navigate('Main', { screen: 'Dashboard' })}
               >
                 <Text style={[styles.quickNavText, { color: theme.colors.primary }]}>
                   DASHBOARD →

@@ -17,11 +17,11 @@ describe('ProstheticHandSimulator Kinematics and Safety Tests', () => {
     simulator.stop();
   });
 
-  test('Initial state matches requirements (Battery: ~82%, Position: 45°, Mode: AUTO)', () => {
+  test('Initial state matches requirements (Battery: ~82%, Position: 45°, Mode: MANUAL)', () => {
     const telemetry = simulator.getTelemetry();
     expect(telemetry.battery).toBe(82);
     expect(telemetry.position).toBe(45);
-    expect(telemetry.mode).toBe('AUTO');
+    expect(telemetry.mode).toBe('MANUAL');
     expect(telemetry.handState).toBe('HOLDING');
   });
 

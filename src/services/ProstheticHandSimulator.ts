@@ -25,7 +25,7 @@ export class ProstheticHandSimulator {
   private position: number = 45.0; // Initial angle 45° (Holding grasp from PDF)
   private targetPosition: number = 45.0;
   private handState: HandState = 'HOLDING';
-  private mode: OperatingMode = 'AUTO';
+  private mode: OperatingMode = 'MANUAL';
   private isMoving: boolean = false;
   private movementDirection: 'OPENING' | 'CLOSING' | 'NONE' = 'NONE';
 
@@ -46,7 +46,7 @@ export class ProstheticHandSimulator {
   // Auto mode sequencer
   private autoCyclePhase: 'OPENING' | 'HOLD_OPEN' | 'CLOSING' | 'HOLD_CLOSED' = 'OPENING';
   private autoHoldTimerMs: number = 0;
-  private readonly AUTO_HOLD_DURATION_MS = 1800; // Hold at full extension for 1.8s
+  private readonly AUTO_HOLD_DURATION_MS = 3000; // Hold at full extension for 3.0s
 
   // General telemetry
   private temperature: number = 34.2;
@@ -344,11 +344,13 @@ export class ProstheticHandSimulator {
       this.logEvent('WARNING', 'Movement Blocked', 'Critical battery - charge required');
       return false;
     }
+    this.mode = 'MANUAL';
     this.targetPosition = this.settings.minimumAngle;
     this.handState = 'OPENING';
     this.isMoving = true;
     this.movementDirection = 'OPENING';
     this.logEvent('COMMAND', 'OPEN Command Executed', `Targeting ${this.settings.minimumAngle}°`);
+    this.broadcastTelemetry();
     return true;
   }
 
@@ -357,27 +359,30 @@ export class ProstheticHandSimulator {
       this.logEvent('WARNING', 'Movement Blocked', 'Critical battery - charge required');
       return false;
     }
+    this.mode = 'MANUAL';
     this.targetPosition = this.settings.maximumAngle;
     this.handState = 'CLOSING';
     this.isMoving = true;
     this.movementDirection = 'CLOSING';
     this.logEvent('COMMAND', 'CLOSE Command Executed', `Targeting ${this.settings.maximumAngle}°`);
+    this.broadcastTelemetry();
     return true;
   }
 
   public emergencyStop(): boolean {
     // Highest priority: immediately halt at exact current position
+    this.mode = 'MANUAL';
     this.targetPosition = this.position;
     this.isMoving = false;
     this.movementDirection = 'NONE';
     this.handState = 'STOPPED';
 
-    // If in AUTO mode, keep mode as AUTO but halt cycle until new command
     this.logEvent(
       'COMMAND',
       'EMERGENCY STOP Triggered',
       `Actuation halted instantly at angle ${this.position.toFixed(1)}°`
     );
+    this.broadcastTelemetry();
     return true;
   }
 
@@ -404,6 +409,7 @@ export class ProstheticHandSimulator {
   }
 
   public setPositionDirect(angle: number): void {
+    this.mode = 'MANUAL';
     this.position = Math.max(this.settings.minimumAngle, Math.min(this.settings.maximumAngle, angle));
     this.targetPosition = this.position;
     this.isMoving = false;

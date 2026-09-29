@@ -4,6 +4,15 @@
 
 ---
 
+## 📋 Submission Details (Section 14)
+
+| Submission Item | Link |
+|---|---|
+| **GitHub Repository** | [https://github.com/rosh2004229/Synthera-DAKSH-01](https://github.com/rosh2004229/Synthera-DAKSH-01) |
+| **View / Live Demo Video** | [Watch Demo Video (daksh01_demo.mp4)](./daksh01_demo.mp4) |
+
+---
+
 ## 1. Project Overview
 
 The **Synthera Prosthetic Hand Controller** is a mobile medical-device dashboard engineered with React Native and TypeScript to monitor, calibrate, and command the **DAKSH-01** multi-articulated bionic prosthetic hand. 

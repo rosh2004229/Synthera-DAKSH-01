@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
+  Keyboard,
+  Platform,
 } from 'react-native';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import {
@@ -11,7 +13,7 @@ import {
   BottomTabBarProps,
 } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../hooks/useTheme';
 import { useAppSelector } from '../store/store';
 import { DashboardScreen } from '../screens/DashboardScreen';
@@ -35,17 +37,36 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
   navigation,
 }) => {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const logsCount = useAppSelector(s => s.logs.logs.length);
   const isMoving = useAppSelector(s => s.device.isMoving);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, () => setIsKeyboardVisible(true));
+    const hideSub = Keyboard.addListener(hideEvent, () => setIsKeyboardVisible(false));
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  if (isKeyboardVisible) {
+    return null;
+  }
 
   return (
-    <SafeAreaView
-      edges={['bottom']}
+    <View
       style={[
-        styles.tabBarSafeArea,
+        styles.tabBarContainer,
         {
           backgroundColor: theme.colors.surface,
           borderTopColor: theme.colors.surfaceBorder,
+          paddingBottom: Math.max(insets.bottom, 6),
         },
       ]}
     >
@@ -55,13 +76,15 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
           const { options } = descriptors[route.key];
 
           const onPress = () => {
-            navigation.emit({
+            const event = navigation.emit({
               type: 'tabPress',
               target: route.key,
               canPreventDefault: true,
             });
 
-            navigation.navigate(route.name);
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name, route.params);
+            }
           };
 
           const onLongPress = () => {
@@ -78,61 +101,76 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
           let iconNode: React.ReactNode = null;
           let badgeNode: React.ReactNode = null;
 
-          if (route.name === 'Dashboard') {
+          if (options.tabBarIcon) {
+            iconNode = options.tabBarIcon({
+              focused: isFocused,
+              color,
+              size: 22,
+            });
+          } else if (route.name === 'Dashboard') {
             iconNode = <ActivityIcon size={22} color={color} />;
           } else if (route.name === 'Controls') {
             iconNode = <HandIcon size={22} color={color} />;
-            if (isMoving) {
-              badgeNode = (
-                <View
-                  style={[
-                    styles.movingDot,
-                    { backgroundColor: theme.colors.primary },
-                  ]}
-                />
-              );
-            }
           } else if (route.name === 'Logs') {
             iconNode = <TerminalIcon size={22} color={color} />;
-            if (logsCount > 0) {
-              badgeNode = (
-                <View
-                  style={[
-                    styles.countBadge,
-                    {
-                      backgroundColor: theme.colors.surfaceHighlight,
-                      borderColor: theme.colors.border,
-                    },
-                  ]}
-                >
-                  <Text style={[styles.badgeText, { color: theme.colors.primary }]}>
-                    {logsCount > 99 ? '99+' : logsCount}
-                  </Text>
-                </View>
-              );
-            }
           } else if (route.name === 'Settings') {
             iconNode = <SettingsIcon size={22} color={color} />;
           }
 
+          if (route.name === 'Controls' && isMoving) {
+            badgeNode = (
+              <View
+                style={[
+                  styles.movingDot,
+                  { backgroundColor: theme.colors.primary },
+                ]}
+              />
+            );
+          } else if (route.name === 'Logs' && logsCount > 0) {
+            badgeNode = (
+              <View
+                style={[
+                  styles.countBadge,
+                  {
+                    backgroundColor: theme.colors.surfaceHighlight,
+                    borderColor: theme.colors.border,
+                  },
+                ]}
+              >
+                <Text style={[styles.badgeText, { color: theme.colors.primary }]}>
+                  {logsCount > 99 ? '99+' : logsCount}
+                </Text>
+              </View>
+            );
+          }
+
           const label =
-            options.tabBarLabel !== undefined
+            typeof options.tabBarLabel === 'function'
+              ? options.tabBarLabel({
+                  focused: isFocused,
+                  color,
+                  position: 'below-icon',
+                  children: route.name,
+                })
+              : options.tabBarLabel !== undefined
               ? (options.tabBarLabel as string)
               : options.title !== undefined
               ? options.title
               : route.name;
+
+          const labelText = typeof label === 'string' ? label : route.name;
 
           return (
             <TouchableOpacity
               key={route.key}
               accessibilityRole="button"
               accessibilityState={isFocused ? { selected: true } : {}}
-              accessibilityLabel={options.tabBarAccessibilityLabel || label}
-              testID={options.tabBarButtonTestID}
+              accessibilityLabel={options.tabBarAccessibilityLabel || labelText}
+              testID={options.tabBarButtonTestID || `tab-button-${route.name.toLowerCase()}`}
               onPress={onPress}
               onLongPress={onLongPress}
-              activeOpacity={0.6}
-              hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 6, right: 6 }}
               style={styles.tabItem}
             >
               {isFocused && (
@@ -159,13 +197,13 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
                 ]}
                 numberOfLines={1}
               >
-                {label}
+                {labelText}
               </Text>
             </TouchableOpacity>
           );
         })}
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -238,7 +276,7 @@ export const RootNavigator: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  tabBarSafeArea: {
+  tabBarContainer: {
     borderTopWidth: 1,
     elevation: 12,
     shadowColor: '#000000',
@@ -263,20 +301,20 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     position: 'relative',
-    width: 26,
-    height: 26,
+    width: 28,
+    height: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },
   tabLabel: {
     fontSize: 11,
     letterSpacing: 0.4,
-    marginTop: 4,
+    marginTop: 3,
   },
   movingDot: {
     position: 'absolute',
     top: -2,
-    right: -4,
+    right: -3,
     width: 8,
     height: 8,
     borderRadius: 4,
@@ -284,8 +322,8 @@ const styles = StyleSheet.create({
   countBadge: {
     position: 'absolute',
     top: -4,
-    right: -12,
-    minWidth: 17,
+    right: -10,
+    minWidth: 18,
     height: 16,
     borderRadius: 8,
     borderWidth: 1,
@@ -300,7 +338,7 @@ const styles = StyleSheet.create({
   activeIndicator: {
     position: 'absolute',
     top: 0,
-    width: 28,
+    width: 32,
     height: 3,
     borderRadius: 1.5,
   },

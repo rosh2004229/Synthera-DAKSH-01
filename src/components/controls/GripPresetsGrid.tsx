@@ -72,9 +72,14 @@ const PRESETS: GripPreset[] = [
 export const GripPresetsGrid: React.FC = React.memo(() => {
   const { theme } = useTheme();
   const { position, isConnected, isCriticalBattery, isMoving } = useDevice();
+  const lastPressRef = React.useRef<number>(0);
 
   const handleSelectPreset = (targetAngle: number) => {
     if (!isConnected || isCriticalBattery) return;
+    const now = Date.now();
+    if (now - lastPressRef.current < 300) return;
+    lastPressRef.current = now;
+    deviceService.setOperatingMode('MANUAL');
     deviceService.setCalibrationAngle(targetAngle);
   };
 
