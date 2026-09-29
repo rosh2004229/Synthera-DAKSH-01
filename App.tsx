@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ActivityIndicator } from 'react-native';
+import { StyleSheet, ActivityIndicator, LogBox } from 'react-native';
 import { Provider } from 'react-redux';
+
+LogBox.ignoreAllLogs(true);
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { store, useAppDispatch } from './src/store/store';
 import { deviceService } from './src/services/DeviceService';
